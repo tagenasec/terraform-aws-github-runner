@@ -12,7 +12,6 @@ locals {
   instance_profile_path = var.instance_profile_path == null ? "/${var.environment}/" : var.instance_profile_path
   lambda_zip            = var.lambda_zip == null ? "${path.module}/lambdas/runners/runners.zip" : var.lambda_zip
   userdata_template     = var.userdata_template == null ? local.default_userdata_template[var.runner_os] : var.userdata_template
-  userdata_arm_patch    = "${path.module}/templates/arm-runner-patch.tpl"
   instance_types        = distinct(var.instance_types == null ? [var.instance_type] : var.instance_types)
   kms_key_arn           = var.kms_key_arn != null ? var.kms_key_arn : ""
 
@@ -132,7 +131,7 @@ resource "aws_launch_template" "runner" {
     pre_install = var.userdata_pre_install
     install_runner = templatefile(local.userdata_install_runner[var.runner_os], {
       S3_LOCATION_RUNNER_DISTRIBUTION = var.s3_location_runner_binaries
-      ARM_PATCH                       = var.runner_architecture == "arm64" ? templatefile(local.userdata_arm_patch, {}) : ""
+      ARM_PATCH                       = var.runner_architecture == "arm64" ? "yum install -y libicu60;" : ""
     })
     post_install    = var.userdata_post_install
     start_runner    = templatefile(local.userdata_start_runner[var.runner_os], {})
