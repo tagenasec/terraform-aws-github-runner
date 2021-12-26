@@ -5,6 +5,7 @@ resource "aws_iam_role" "runner" {
   assume_role_policy   = templatefile("${path.module}/policies/instance-role-trust-policy.json", {})
   path                 = local.role_path
   permissions_boundary = var.role_permissions_boundary
+  max_session_duration = 43200
   tags                 = local.tags
 }
 
@@ -46,6 +47,12 @@ resource "aws_iam_role_policy" "describe_tags" {
   name   = "runner-describe-tags"
   role   = aws_iam_role.runner.name
   policy = file("${path.module}/policies/instance-describe-tags-policy.json")
+}
+
+resource "aws_iam_role_policy" "github_actions" {
+  name   = "runner-github_actions"
+  role   = aws_iam_role.runner.name
+  policy = file("${path.module}/policies/github-actions-policy.json")
 }
 
 resource "aws_iam_role_policy_attachment" "managed_policies" {
